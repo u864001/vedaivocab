@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>霧臺魯凱語單字挑戰</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #A0522D;
+            --secondary-color: #CD853F;
+            --dark-color: #3E2723;
+            --light-color: #FFFDF9;
+            --accent-color: #FF4500;
+            --correct-color: #2E7D32;
+            --wrong-color: #C62828;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; }
+
+        body {
+            background-color: var(--light-color);
+            background-image: linear-gradient(rgba(255,253,249,0.92), rgba(255,253,249,0.92)), 
+                              url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 60 60"><path d="M0 30 L30 0 L60 30 L30 60 Z" fill="none" stroke="%23CD853F" stroke-width="1" opacity="0.15"/></svg>');
+            color: var(--dark-color);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+        }
+
+        .container {
+            background: #ffffff; width: 100%; max-width: 650px; border-radius: 24px;
+            box-shadow: 0 12px 30px rgba(62, 39, 35, 0.1); border: 4px solid var(--primary-color);
+            padding: 30px 25px; text-align: center; position: relative; overflow: hidden;
+        }
+
+        .tribal-border {
+            height: 12px;
+            background: repeating-linear-gradient(45deg, var(--primary-color), var(--primary-color) 10px, var(--accent-color) 10px, var(--accent-color) 20px, var(--secondary-color) 20px, var(--secondary-color) 30px);
+            position: absolute; top: 0; left: 0; right: 0;
+        }
+
+        h1 { font-size: 1.8rem; color: var(--dark-color); margin-top: 10px; margin-bottom: 25px; letter-spacing: 1px; }
+
+        .screen { display: none; }
+        .screen.active { display: block; animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .form-group { margin-bottom: 20px; text-align: left; }
+        label { display: block; font-weight: bold; margin-bottom: 8px; color: var(--primary-color); font-size: 1.05rem; }
+        select, button, input { width: 100%; padding: 14px; border-radius: 12px; font-size: 1.1rem; outline: none; transition: all 0.2s ease; border: 2px solid var(--secondary-color); background-color: #fff; color: var(--dark-color); }
+        
+        .btn-main { background-color: var(--primary-color); color: #fff; border: none; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(160, 82, 45, 0.3); margin-top: 10px; }
+        .btn-main:hover { background-color: var(--dark-color); transform: translateY(-2px); }
+        .btn-main:disabled { background-color: #ccc; cursor: not-allowed; box-shadow: none; transform: none; }
+
+        .btn-mode { background-color: #fff; border: 3px solid var(--secondary-color); color: var(--dark-color); font-weight: bold; margin-bottom: 12px; cursor: pointer; text-align: center; }
+        .btn-mode.selected { background-color: var(--secondary-color); color: #fff; border-color: var(--primary-color); }
+
+        .game-status { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 1rem; font-weight: bold; color: #666; }
+        .progress-bar-container { width: 100%; height: 10px; background-color: #eee; border-radius: 5px; margin-bottom: 30px; overflow: hidden; }
+        .progress-bar { height: 100%; width: 0%; background-color: var(--accent-color); transition: width 0.3s ease; }
+
+        .question-box { background-color: rgba(205, 133, 63, 0.1); padding: 35px 20px; border-radius: 16px; margin-bottom: 30px; border-left: 6px solid var(--primary-color); }
+        .question-text { font-size: 2.2rem; font-weight: bold; color: var(--dark-color); word-break: break-word; }
+
+        .options-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
+        @media (min-width: 480px) { .options-grid { grid-template-columns: 1fr 1fr; } }
+        .btn-option { background-color: #ffffff; border: 2.5px solid var(--secondary-color); color: var(--dark-color); font-weight: 500; cursor: pointer; border-radius: 14px; padding: 16px 10px; font-size: 1.15rem; display: flex; justify-content: center; align-items: center; min-height: 65px; }
+        .btn-option:hover:not([disabled]) { background-color: rgba(205, 133, 63, 0.08); border-color: var(--primary-color); }
+        .btn-option.correct { background-color: var(--correct-color) !important; color: white !important; border-color: var(--correct-color) !important; }
+        .btn-option.wrong { background-color: var(--wrong-color) !important; color: white !important; border-color: var(--wrong-color) !important; }
+
+        .score-display { font-size: 3.5rem; font-weight: bold; color: var(--accent-color); margin: 15px 0; }
+        .time-display { font-size: 1.2rem; color: #666; margin-bottom: 20px; font-weight: bold; }
+        
+        .loader { border: 5px solid #f3f3f3; border-top: 5px solid var(--primary-color); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* 排行榜與大廳底部樣式 */
+        .rank-tabs { display: flex; justify-content: space-between; margin-bottom: 20px; }
+        .rank-tab { flex: 1; padding: 10px; border: 2px solid var(--secondary-color); background: #fff; cursor: pointer; font-weight: bold; border-radius: 8px; margin: 0 5px; }
+        .rank-tab.active { background: var(--primary-color); color: #fff; border-color: var(--primary-color); }
+        .rank-list { text-align: left; background: #fafafa; border-radius: 12px; padding: 15px; min-height: 250px;}
+        .rank-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px dashed #ccc; font-size: 1rem; }
+        .rank-item:last-child { border-bottom: none; }
+        .rank-pos { font-weight: bold; color: var(--accent-color); width: 35px; font-size: 1.2rem; }
+        .rank-name { flex: 1; font-weight: bold; }
+        .rank-meta { text-align: right; font-size: 0.9rem; color: #555; }
+        .rank-score { font-weight: bold; color: var(--correct-color); font-size: 1.1rem; display: block; }
+        
+        #qrcode-area { display: flex; justify-content: center; align-items: center; gap: 20px; margin-top: 30px; border-top: 1px dashed #ccc; padding-top: 20px; }
+        .debug-btn { background: #eee; border: none; color: #888; padding: 5px 10px; border-radius: 8px; font-size: 0.8rem; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="tribal-border"></div>
+        <h1>霧臺魯凱語單字挑戰</h1>
+
+        <div id="setup-loader" class="screen active" style="text-align: center; padding: 40px 0;">
+            <div id="loader-spinner" class="loader"></div>
+            <p id="loader-text" style="color: #666; font-weight: bold; line-height: 1.5;">系統正在同步雲端字庫...</p>
+        </div>
+
+        <div id="menu-screen" class="screen">
+            <div class="form-group">
+                <label>第一步：選擇遊戲模式</label>
+                <button type="button" id="mode-r2c" class="btn-mode selected" onclick="selectMode('r2c')">看族語 ➔ 選中文</button>
+                <button type="button" id="mode-c2r" class="btn-mode" onclick="selectMode('c2r')">看中文 ➔ 選族語</button>
+            </div>
+
+            <div class="form-group">
+                <label for="scope-select">第二步：選擇題目範圍</label>
+                <select id="scope-select" onchange="toggleScopeDetails()">
+                    <option value="all">【全部範圍】全面大賽挑戰</option>
+                    <option value="boss" style="color: var(--wrong-color); font-weight: bold;">🔥 【魔王特訓】當月易錯單字</option>
+                    <option value="hundred">【百字破關】自主分段練習</option>
+                    <option value="category">【課堂特訓】特定單元複習</option>
+                </select>
+            </div>
+            <div class="form-group" id="hundred-group" style="display: none;">
+                <select id="hundred-select"></select>
+            </div>
+            <div class="form-group" id="category-group" style="display: none;">
+                <select id="category-select"></select>
+            </div>
+
+            <div class="form-group">
+                <label for="count-select">第三步：選擇測驗題數</label>
+                <select id="count-select">
+                    <option value="20">20 題 (每題5分)</option>
+                    <option value="50">50 題 (每題2分)</option>
+                    <option value="100">100 題 (每題1分)</option>
+                </select>
+            </div>
+
+            <button class="btn-main" onclick="prepareGame()">開始挑戰</button>
+            
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-main" style="background-color: var(--secondary-color);" onclick="loadLeaderboard()">🏆 當月英雄榜</button>
+                <button class="btn-main" style="background-color: var(--wrong-color);" onclick="loadBossBoard()">👹 魔王單字榜</button>
+            </div>
+
+            <div id="qrcode-area">
+                <div id="qrcode"></div>
+                <div style="text-align: left;">
+                    <p style="font-size: 0.85rem; color: #666; margin-bottom: 5px;">掃描隨時加入遊戲</p>
+                    <button class="debug-btn" onclick="showDebug()">🔍 系統檢測</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="game-screen" class="screen">
+            <div class="game-status">
+                <span id="current-round-text">題目：1 / 20</span>
+                <span id="current-score-text">得分：0</span>
+            </div>
+            <div class="progress-bar-container"><div id="game-progress" class="progress-bar"></div></div>
+            <div class="question-box"><div id="question-text" class="question-text"></div></div>
+            <div class="options-grid">
+                <button class="btn-option" onclick="submitAnswer(0)">選項一</button>
+                <button class="btn-option" onclick="submitAnswer(1)">選項二</button>
+                <button class="btn-option" onclick="submitAnswer(2)">選項三</button>
+                <button class="btn-option" onclick="submitAnswer(3)">選項四</button>
+            </div>
+        </div>
+
+        <div id="summary-screen" class="screen">
+            <h2 style="color: var(--primary-color);">挑戰完成！</h2>
+            <div id="final-score" class="score-display">0</div>
+            <div id="time-taken" class="time-display">耗時：0 秒</div>
+            
+            <div id="score-submit-area" class="form-group" style="background: rgba(205,133,63,0.1); padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+                <label>登錄成績到英雄榜</label>
+                <input type="text" id="player-name" placeholder="輸入姓名 (限8中文字或16英文字)">
+                <p id="name-warning" style="color: var(--wrong-color); font-size: 0.9rem; margin-top: 5px; display: none;"></p>
+                <button id="btn-submit-score" class="btn-main" onclick="submitScoreToRank()">送出成績</button>
+                <p id="submit-msg" style="color: var(--correct-color); font-weight: bold; margin-top: 10px; display: none;"></p>
+            </div>
+
+            <button class="btn-main" style="background-color: #666;" onclick="backToMenu()">返回主選單</button>
+        </div>
+
+        <div id="leaderboard-screen" class="screen">
+            <h2 id="rank-main-title" style="color: var(--primary-color); margin-bottom: 20px;">🏆 當月英雄榜</h2>
+            
+            <div id="rank-tabs-container" class="rank-tabs">
+                <div class="rank-tab active" onclick="switchRankTab('20')">20 題</div>
+                <div class="rank-tab" onclick="switchRankTab('50')">50 題</div>
+                <div class="rank-tab" onclick="switchRankTab('100')">100 題</div>
+            </div>
+
+            <div id="rank-loader" class="loader" style="display: none;"></div>
+            <div id="rank-content" class="rank-list"></div>
+            <button class="btn-main" style="margin-top: 25px;" onclick="backToMenu()">返回主選單</button>
+        </div>
+    </div>
+
+    <script>
+        // API 網址設定
+        const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRJYbBjapDXnNWlpinX1IdPpkxcxn5y4nL1aQhVehMTf5ReawC6QTo8V6uA0nawLsu2sHb6351p_R-A/pub?output=csv";
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbwkhH3FTykNjqWbd2DqraDLGfl7nS7jilA0zKP9gM1CQ4CJjk6S0PvaUCi5SGjhMJ7j/exec"; 
+
+        let allWords = []; let skippedWords = []; 
+        let bossListTop100 = []; let currentRankData = null;
+        let gamePool = []; let currentQuestionIndex = 0; let score = 0; let ptsPerQ = 5;
+        let selectedGameMode = 'r2c'; let currentCorrectIndex = -1; let isAnsweringAllowed = true;
+        let gameStartTime = 0; let finalTimeTaken = 0; let wrongIdsThisRound = [];
+
+        const badWords = ["笨蛋", "白痴", "白癡", "智障", "垃圾", "幹", "靠杯", "靠北", "fuck", "shit"];
+
+        window.onload = function() {
+            // 產生 100x100 QR Code
+            new QRCode(document.getElementById("qrcode"), { text: window.location.href, width: 100, height: 100 });
+            
+            // 載入 CSV
+            fetch(SHEET_CSV_URL).then(res => res.text()).then(text => { 
+                parseCSVData(text); 
+                buildMenuOptions(); 
+                
+                // 背景載入排行榜與錯題榜資料
+                fetch(GAS_URL).then(res => res.json()).then(data => {
+                    currentRankData = data.rank;
+                    bossListTop100 = data.boss;
+                    showScreen('menu-screen');
+                }).catch(err => {
+                    // 若 GAS 失敗仍可玩單機版
+                    showScreen('menu-screen');
+                });
+            }).catch(err => {
+                document.getElementById('loader-spinner').style.display = 'none';
+                document.getElementById('loader-text').innerHTML = `<span style="color:red; font-size:1.2rem;">字庫讀取失敗，請確認網路或發布設定。</span>`;
+            });
+        };
+
+        // CSV 簡單解析 (防呆空白與無此詞彙)
+        function parseCSVData(csvText) {
+            const lines = csvText.split(/\r?\n/);
+            for(let i = 1; i < lines.length; i++) {
+                if(!lines[i].trim()) continue;
+                let row = lines[i].split(','); 
+                // 基礎防撞：確保欄位足夠
+                if(row.length >= 4 && row[1]) {
+                    let id = row[1].trim();
+                    let rukaiWord = row[2] ? row[2].trim() : "";
+                    let chineseWord = row[3] ? row[3].trim() : "";
+                    
+                    if (rukaiWord === "無此詞彙" || rukaiWord === "" || chineseWord === "無此詞彙" || chineseWord === "") {
+                        skippedWords.push(id);
+                        continue;
+                    }
+                    allWords.push({ category: row[0].trim(), id: id, rukai: rukaiWord, chinese: chineseWord });
+                }
+            }
+        }
+
+        function showDebug() {
+            if(skippedWords.length === 0) alert("完美！目前沒有任何空白或失效的單字。");
+            else alert("系統跳過了以下 ID (空白或無此詞彙)：\n\n" + skippedWords.join(", "));
+        }
+
+        function buildMenuOptions() {
+            const hundredSelect = document.getElementById('hundred-select');
+            for(let i = 0; i < Math.ceil(allWords.length / 100); i++) {
+                let end = Math.min((i + 1) * 100, allWords.length);
+                hundredSelect.innerHTML += `<option value="${i * 100}-${end}">第 ${i+1} 關 (${i * 100 + 1} ~ ${end} 詞)</option>`;
+            }
+            const catSelect = document.getElementById('category-select');
+            [...new Set(allWords.map(w => w.category))].filter(Boolean).sort().forEach(cat => {
+                catSelect.innerHTML += `<option value="${cat}">${cat}</option>`;
+            });
+        }
+
+        function selectMode(mode) {
+            selectedGameMode = mode;
+            document.getElementById('mode-r2c').classList.remove('selected');
+            document.getElementById('mode-c2r').classList.remove('selected');
+            document.getElementById(`mode-${mode}`).classList.add('selected');
+        }
+
+        function toggleScopeDetails() {
+            const scope = document.getElementById('scope-select').value;
+            document.getElementById('hundred-group').style.display = (scope === 'hundred') ? 'block' : 'none';
+            document.getElementById('category-group').style.display = (scope === 'category') ? 'block' : 'none';
+        }
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function prepareGame() {
+            const scope = document.getElementById('scope-select').value;
+            let tempPool = [];
+
+            if (scope === 'all') tempPool = [...allWords];
+            else if (scope === 'hundred') tempPool = allWords.slice(...document.getElementById('hundred-select').value.split('-').map(Number));
+            else if (scope === 'category') tempPool = allWords.filter(w => w.category === document.getElementById('category-select').value);
+            else if (scope === 'boss') {
+                if (bossListTop100.length === 0) return alert("目前尚無魔王單字資料，請先遊玩一般模式累積錯題！");
+                // 依照 bossList 的 ID 去 allWords 找對應單字
+                let bossIds = bossListTop100.map(b => b.id.toString());
+                tempPool = allWords.filter(w => bossIds.includes(w.id.toString()));
+            }
+            
+            if(tempPool.length < 4) return alert("該範圍題庫字數不足 4 個！請重新選擇。");
+            
+            // 決定配分與題數
+            const targetCount = parseInt(document.getElementById('count-select').value);
+            ptsPerQ = targetCount === 20 ? 5 : (targetCount === 50 ? 2 : 1);
+            
+            tempPool.sort(() => Math.random() - 0.5);
+            gamePool = tempPool.slice(0, Math.min(targetCount, tempPool.length));
+            
+            currentQuestionIndex = 0; score = 0; wrongIdsThisRound = [];
+            gameStartTime = Date.now(); 
+            startRound(); showScreen('game-screen');
+        }
+
+        function startRound() {
+            isAnsweringAllowed = true;
+            const currentItem = gamePool[currentQuestionIndex];
+            document.getElementById('current-round-text').innerText = `題目：${currentQuestionIndex + 1} / ${gamePool.length}`;
+            document.getElementById('current-score-text').innerText = `得分：${score}`;
+            document.getElementById('game-progress').style.width = `${(currentQuestionIndex / gamePool.length) * 100}%`;
+            document.getElementById('question-text').innerText = selectedGameMode === 'r2c' ? currentItem.rukai : currentItem.chinese;
+
+            let options = [currentItem, ...allWords.filter(w => w.id !== currentItem.id).sort(() => Math.random() - 0.5).slice(0,3)].sort(() => Math.random() - 0.5);
+            currentCorrectIndex = options.findIndex(o => o.id === currentItem.id);
+
+            document.querySelectorAll('.btn-option').forEach((btn, i) => {
+                btn.className = 'btn-option'; btn.disabled = false;
+                btn.innerText = selectedGameMode === 'r2c' ? options[i].chinese : options[i].rukai;
+            });
+        }
+
+        function submitAnswer(selectedIndex) {
+            if(!isAnsweringAllowed) return;
+            isAnsweringAllowed = false;
+            const btns = document.querySelectorAll('.btn-option');
+            btns.forEach(btn => btn.disabled = true);
+            
+            if(selectedIndex === currentCorrectIndex) { 
+                btns[selectedIndex].classList.add('correct'); 
+                score += ptsPerQ; 
+            } else { 
+                btns[selectedIndex].classList.add('wrong'); 
+                btns[currentCorrectIndex].classList.add('correct'); 
+                // 記錄答錯的單字
+                if (!wrongIdsThisRound.includes(gamePool[currentQuestionIndex].id)) {
+                    wrongIdsThisRound.push(gamePool[currentQuestionIndex].id);
+                }
+            }
+
+            setTimeout(() => {
+                currentQuestionIndex++;
+                if(currentQuestionIndex < gamePool.length) startRound();
+                else showSummary();
+            }, 1000);
+        }
+
+        function showSummary() {
+            finalTimeTaken = Math.floor((Date.now() - gameStartTime) / 1000); 
+            
+            document.getElementById('game-progress').style.width = `100%`;
+            document.getElementById('final-score').innerText = `${score} 分`;
+            document.getElementById('time-taken').innerText = `耗時：${finalTimeTaken} 秒`;
+            
+            document.getElementById('player-name').value = '';
+            document.getElementById('name-warning').style.display = 'none';
+            document.getElementById('btn-submit-score').disabled = false;
+            document.getElementById('btn-submit-score').innerText = '送出成績';
+            document.getElementById('submit-msg').style.display = 'none';
+            document.getElementById('score-submit-area').style.display = 'block';
+
+            // 遊戲結束時，如果不是魔王模式，就在背景上傳錯題
+            if (document.getElementById('scope-select').value !== 'boss' && wrongIdsThisRound.length > 0) {
+                fetch(GAS_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ type: 'wrong', wrongIds: wrongIdsThisRound }),
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+                }).catch(e => console.log('背景上傳錯題失敗', e));
+            }
+
+            showScreen('summary-screen');
+        }
+
+        // 計算中英文寬度
+        function getByteLen(val) {
+            let len = 0;
+            for (let i = 0; i < val.length; i++) {
+                if (val.charCodeAt(i) > 255) len += 2; else len += 1;
+            }
+            return len;
+        }
+
+        function submitScoreToRank() {
+            const name = document.getElementById('player-name').value.trim();
+            const warning = document.getElementById('name-warning');
+            warning.style.display = 'none';
+
+            if(!name) { warning.innerText = "請輸入姓名喔！"; warning.style.display = 'block'; return; }
+            if(getByteLen(name) > 16) { warning.innerText = "名字太長囉！(限8中文字或16英文字)"; warning.style.display = 'block'; return; }
+            
+            for(let word of badWords) {
+                if(name.toLowerCase().includes(word)) {
+                    warning.innerText = "請使用文雅的名稱喔！"; warning.style.display = 'block'; return;
+                }
+            }
+
+            const btn = document.getElementById('btn-submit-score');
+            btn.disabled = true;
+            btn.innerText = "驗證與上傳中...";
+            const modeStr = document.getElementById('count-select').value;
+
+            // 抓取最新排名判斷
+            fetch(GAS_URL).then(res => res.json()).then(data => {
+                currentRankData = data.rank;
+                let isTop20 = true;
+                if(currentRankData[modeStr] && currentRankData[modeStr].length >= 20) {
+                    const lowestRank = currentRankData[modeStr][19];
+                    if(score < lowestRank.score || (score === lowestRank.score && finalTimeTaken > lowestRank.timeTaken)) {
+                        isTop20 = false;
+                    }
+                }
+
+                if(!isTop20) {
+                    document.getElementById('submit-msg').innerText = "挑戰完成！不過目前分數未達英雄榜 Top 20，下次再試試！";
+                    document.getElementById('submit-msg').style.color = "#666";
+                    document.getElementById('submit-msg').style.display = 'block';
+                    btn.style.display = 'none';
+                    return; 
+                }
+
+                return fetch(GAS_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ type: 'score', name: name, mode: modeStr, score: score, timeTaken: finalTimeTaken }),
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+                }).then(res => res.json()).then(data => {
+                    btn.style.display = 'none';
+                    document.getElementById('submit-msg').innerText = "🎉 成功擠進英雄榜！快去查看吧！";
+                    document.getElementById('submit-msg').style.color = "var(--correct-color)";
+                    document.getElementById('submit-msg').style.display = 'block';
+                });
+            }).catch(err => {
+                alert("上傳失敗，請確認網路連線。");
+                btn.disabled = false;
+                btn.innerText = "送出成績";
+            });
+        }
+
+        // 載入英雄榜
+        function loadLeaderboard() {
+            showScreen('leaderboard-screen');
+            document.getElementById('rank-main-title').innerText = '🏆 當月英雄榜';
+            document.getElementById('rank-tabs-container').style.display = 'flex';
+            document.getElementById('rank-content').innerHTML = '';
+            document.getElementById('rank-loader').style.display = 'block';
+
+            fetch(GAS_URL).then(res => res.json()).then(data => {
+                currentRankData = data.rank;
+                document.getElementById('rank-loader').style.display = 'none';
+                switchRankTab('20');
+            }).catch(err => {
+                document.getElementById('rank-loader').style.display = 'none';
+                document.getElementById('rank-content').innerHTML = '<p style="text-align:center; color:red;">連線失敗</p>';
+            });
+        }
+
+        function switchRankTab(mode) {
+            document.querySelectorAll('.rank-tab').forEach(t => t.classList.remove('active'));
+            const tabs = document.querySelectorAll('.rank-tab');
+            if(mode === '20') tabs[0].classList.add('active');
+            if(mode === '50') tabs[1].classList.add('active');
+            if(mode === '100') tabs[2].classList.add('active');
+            
+            const content = document.getElementById('rank-content');
+            content.innerHTML = '';
+            
+            if(!currentRankData || !currentRankData[mode] || currentRankData[mode].length === 0) {
+                content.innerHTML = '<p style="text-align:center; margin-top:20px; color:#888;">這個月還沒有人挑戰這個模式喔，快來搶頭香！</p>';
+                return;
+            }
+
+            currentRankData[mode].forEach((item, index) => {
+                content.innerHTML += `
+                    <div class="rank-item">
+                        <span class="rank-pos">#${index + 1}</span>
+                        <span class="rank-name">${item.name}</span>
+                        <div class="rank-meta">
+                            <span class="rank-score">${item.score} 分</span>
+                            <span>${item.timeTaken} 秒</span>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // 載入魔王榜
+        function loadBossBoard() {
+            showScreen('leaderboard-screen');
+            document.getElementById('rank-main-title').innerText = '👹 當月魔王單字榜 (Top 20)';
+            document.getElementById('rank-tabs-container').style.display = 'none';
+            document.getElementById('rank-content').innerHTML = '';
+            document.getElementById('rank-loader').style.display = 'block';
+
+            fetch(GAS_URL).then(res => res.json()).then(data => {
+                document.getElementById('rank-loader').style.display = 'none';
+                const bossTop20 = data.boss.slice(0, 20); // 只顯示前20
+                
+                if (bossTop20.length === 0) {
+                    document.getElementById('rank-content').innerHTML = '<p style="text-align:center; margin-top:20px; color:#888;">目前還沒有錯題紀錄喔！</p>';
+                    return;
+                }
+
+                let html = '';
+                bossTop20.forEach((item, index) => {
+                    let word = allWords.find(w => w.id.toString() === item.id.toString());
+                    let wordText = word ? `${word.rukai} (${word.chinese})` : `未知單字 (ID: ${item.id})`;
+                    html += `
+                        <div class="rank-item">
+                            <span class="rank-pos">#${index + 1}</span>
+                            <span class="rank-name" style="color: var(--wrong-color);">${wordText}</span>
+                            <div class="rank-meta"><span class="rank-score" style="color: #666;">錯誤 ${item.count} 次</span></div>
+                        </div>`;
+                });
+                document.getElementById('rank-content').innerHTML = html;
+            }).catch(err => {
+                document.getElementById('rank-loader').style.display = 'none';
+                document.getElementById('rank-content').innerHTML = '<p style="text-align:center; color:red;">連線失敗</p>';
+            });
+        }
+
+        function backToMenu() { showScreen('menu-screen'); }
+    </script>
+</body>
+</html>
