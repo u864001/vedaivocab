@@ -95,6 +95,7 @@ function App() {
             {currentView === 'spelling' && <SpellingGame onBack={() => navigateTo('lobby')} settings={settings} wordDatabase={wordDatabase} qualifyingBook={qualifyingBook} onSaveScore={handleSaveScore} />}
             {currentView === 'meteor' && <MeteorGame subMode={gameMode} onBack={() => navigateTo('lobby')} settings={settings} wordDatabase={wordDatabase} qualifyingBook={qualifyingBook} onSaveScore={handleSaveScore} />}
             {currentView === 'leaderboard' && <LeaderboardView onBack={() => navigateTo('lobby')} leaderboards={leaderboards} groupedUnits={groupedUnits} />}
+             {currentView === 'battle' && <BattleGame onBack={() => navigateTo('lobby')} wordDatabase={wordDatabase} dbRef={dbRef} user={user} />}
         </div>
     );
 }
@@ -174,21 +175,38 @@ function Lobby({ onNavigate, settings, setSettings, wordDatabase, groupedUnits, 
 
             <section className="mb-8">
                 <div className="flex items-center gap-2 mb-4 px-2">
+                    <i className="fa-solid fa-fire text-red-500 text-xl"></i>
+                    <h2 className="text-lg font-bold text-slate-700 dark:text-slate-200">2. 多人連線對戰</h2>
+                </div>
+                <div className="mb-8">
+                    <button onClick={() => onNavigate('battle')} disabled={isQuizDisabled} className={`w-full rounded-3xl p-6 sm:p-8 flex items-center justify-between transition-all ${isQuizDisabled ? 'bg-slate-100 opacity-50' : 'bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 hover:shadow-2xl hover:shadow-red-500/20 border border-slate-700 group'}`}>
+                        <div className="flex items-center gap-6">
+                            <div className="w-16 h-16 rounded-2xl bg-red-500/20 flex items-center justify-center text-red-500 group-hover:scale-110 group-hover:bg-red-500 group-hover:text-white transition-all"><i className="fa-solid fa-swords text-3xl"></i></div>
+                            <div className="text-left">
+                                <h3 className="font-black text-2xl text-white mb-1 tracking-wide">星際地平線死鬥 <span className="text-xs bg-red-600 text-white px-2 py-1 rounded-full ml-2 align-middle">BETA</span></h3>
+                                <p className="text-slate-400 font-medium text-sm">2~4 人區網對戰，支援陷害與防線拔河，活到最後即是贏家！</p>
+                            </div>
+                        </div>
+                        <i className="fa-solid fa-chevron-right text-slate-500 text-2xl group-hover:text-red-400 group-hover:translate-x-2 transition-transform hidden sm:block"></i>
+                    </button>
+                </div>
+
+                <div className="flex items-center gap-2 mb-4 px-2">
                     <i className="fa-solid fa-rocket text-indigo-500 text-xl"></i>
-                    <h2 className="text-lg font-bold text-slate-700 dark:text-slate-200">2. 太空隕石防衛戰</h2>
+                    <h2 className="text-lg font-bold text-slate-700 dark:text-slate-200">3. 單人挑戰模式</h2>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
                     <button onClick={() => onNavigate('meteor', 'zh-en')} disabled={isQuizDisabled} className={`rounded-2xl p-5 border-2 flex flex-col items-center text-center gap-3 transition-all ${isQuizDisabled ? 'bg-slate-100 opacity-50' : 'bg-slate-800 border-slate-700 hover:border-indigo-400 hover:shadow-lg text-white'}`}>
                         <div className="w-14 h-14 rounded-full flex items-center justify-center bg-indigo-500 text-white"><i className="fa-solid fa-meteor text-2xl"></i></div>
-                        <div><h3 className="font-bold">看中文選英文</h3><p className="text-xs text-slate-300 mt-1">掉落中文，選擇英文砲台</p></div>
+                        <div><h3 className="font-bold">看中文選英文</h3><p className="text-xs text-slate-300 mt-1">單機生存，挑戰排行榜</p></div>
                     </button>
                     <button onClick={() => onNavigate('meteor', 'en-zh')} disabled={isQuizDisabled} className={`rounded-2xl p-5 border-2 flex flex-col items-center text-center gap-3 transition-all ${isQuizDisabled ? 'bg-slate-100 opacity-50' : 'bg-slate-800 border-slate-700 hover:border-emerald-400 hover:shadow-lg text-white'}`}>
                         <div className="w-14 h-14 rounded-full flex items-center justify-center bg-emerald-500 text-white"><i className="fa-solid fa-meteor text-2xl"></i></div>
-                        <div><h3 className="font-bold">看英文選中文</h3><p className="text-xs text-slate-300 mt-1">掉落英文，選擇中文砲台</p></div>
+                        <div><h3 className="font-bold">看英文選中文</h3><p className="text-xs text-slate-300 mt-1">單機生存，挑戰排行榜</p></div>
                     </button>
                     <button onClick={() => onNavigate('meteor', 'abc')} className="rounded-2xl p-5 border-2 flex flex-col items-center text-center gap-3 transition-all bg-gradient-to-br from-yellow-400 to-orange-500 hover:scale-105 hover:shadow-lg text-white border-transparent">
                         <div className="w-14 h-14 rounded-full flex items-center justify-center bg-white/20 text-white"><i className="fa-solid fa-font text-2xl"></i></div>
-                        <div><h3 className="font-bold">ABC 大小寫防衛戰</h3><p className="text-xs text-orange-100 mt-1">一二年級專屬，免選範圍直接玩</p></div>
+                        <div><h3 className="font-bold">ABC 大小寫防衛戰</h3><p className="text-xs text-orange-100 mt-1">一二年級專屬，直接玩</p></div>
                     </button>
                 </div>
 
