@@ -289,7 +289,7 @@ function BattleArena({ roomData, dbRef, user, wordDatabase }) {
             const progress = Math.min(elapsed / currentMeteor.duration, 1);
             
             // 地平線越高，終點線越高。每級地平線實體上移 18%
-            const bottomLimit = 100 - (myState.horizon * 18);
+            const bottomLimit = 82 - (myState.horizon * 18); // 修正：提早判定，讓隕石底部剛好貼齊紅線
             const easeInProgress = progress * progress; // 重力加速度
             const currentY = -15 + (easeInProgress * (bottomLimit + 15)); 
 
@@ -355,7 +355,10 @@ function BattleArena({ roomData, dbRef, user, wordDatabase }) {
         <div className="flex-1 flex flex-col w-full h-[100dvh] bg-slate-900 overflow-hidden no-select font-sans relative">
             {/* 頂部：對手儀表板 */}
             <header className="bg-slate-950 border-b border-slate-800 p-2 flex justify-around items-center shrink-0 z-20">
-                <div className="text-white font-mono font-black text-xl bg-slate-800 px-3 py-1 rounded-lg border border-slate-700">{Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}</div>
+                <div className="flex flex-col items-center bg-slate-800 px-3 py-1 rounded-lg border border-slate-700">
+                 <span className="text-white font-mono font-black text-xl leading-none">{Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}</span>
+                 <span className="text-yellow-400 font-black text-[10px] tracking-widest mt-1">ROOM {roomData?.code}</span>
+             </div>
                 {otherPlayers.map((p, i) => (
                     <div key={i} className={`flex flex-col items-center px-2 transition-all ${p.isDead ? 'opacity-30 grayscale' : ''}`}>
                         <span className="text-xs font-bold text-slate-300 truncate max-w-[70px]">{p.name}</span>
