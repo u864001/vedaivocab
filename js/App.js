@@ -95,7 +95,7 @@ function App() {
             {currentView === 'spelling' && <SpellingGame onBack={() => navigateTo('lobby')} settings={settings} wordDatabase={wordDatabase} qualifyingBook={qualifyingBook} onSaveScore={handleSaveScore} />}
             {currentView === 'meteor' && <MeteorGame subMode={gameMode} onBack={() => navigateTo('lobby')} settings={settings} wordDatabase={wordDatabase} qualifyingBook={qualifyingBook} onSaveScore={handleSaveScore} />}
             {currentView === 'leaderboard' && <LeaderboardView onBack={() => navigateTo('lobby')} leaderboards={leaderboards} groupedUnits={groupedUnits} />}
-             {currentView === 'battle' && <BattleGame onBack={() => navigateTo('lobby')} wordDatabase={wordDatabase} dbRef={dbRef} user={user} />}
+            {currentView === 'battle' && <BattleGame onBack={() => navigateTo('lobby')} wordDatabase={wordDatabase} dbRef={dbRef} user={user} settings={settings} />}
         </div>
     );
 }
@@ -179,7 +179,7 @@ function Lobby({ onNavigate, settings, setSettings, wordDatabase, groupedUnits, 
                     <h2 className="text-lg font-bold text-slate-700 dark:text-slate-200">2. 多人連線對戰</h2>
                 </div>
                 <div className="mb-8">
-                    <button onClick={() => onNavigate('battle')} disabled={isQuizDisabled} className={`w-full rounded-3xl p-6 sm:p-8 flex items-center justify-between transition-all ${isQuizDisabled ? 'bg-slate-100 opacity-50' : 'bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 hover:shadow-2xl hover:shadow-red-500/20 border border-slate-700 group'}`}>
+                    <button onClick={() => onNavigate('battle')} className="w-full rounded-3xl p-6 sm:p-8 flex items-center justify-between transition-all bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 hover:shadow-2xl hover:shadow-red-500/20 border border-slate-700 group">
                         <div className="flex items-center gap-6">
                             <div className="w-16 h-16 rounded-2xl bg-red-500/20 flex items-center justify-center text-red-500 group-hover:scale-110 group-hover:bg-red-500 group-hover:text-white transition-all"><i className="fa-solid fa-swords text-3xl"></i></div>
                             <div className="text-left">
