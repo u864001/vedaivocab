@@ -227,9 +227,17 @@ function Lobby({ onNavigate, settings, setSettings, wordDatabase, groupedUnits, 
                     <button onClick={() => onNavigate('listening')} disabled={isQuizDisabled} className={`rounded-2xl p-4 border-2 flex flex-col items-center text-center gap-2 transition-all ${isQuizDisabled ? 'bg-slate-100 opacity-50' : 'bg-white hover:border-purple-300'}`}>
                         <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isQuizDisabled ? 'bg-slate-200' : 'bg-purple-100 text-purple-600'}`}><i className="fa-solid fa-volume-high"></i></div>
                         <div><h3 className="font-bold text-sm">聽力測驗</h3></div>
-                    </button>
-                </div>
-            </section>
+                 </button>
+             </div>
+         </section>
+
+         {/* 加入底部 QR Code 方便學生掃描 */}
+         <footer className="mt-4 flex flex-col items-center justify-center text-slate-400 pb-8">
+             <div className="bg-white p-2 rounded-xl shadow-sm border border-slate-200 mb-2 transition-transform hover:scale-110">
+                 <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=https://u864001.github.io/vedaivocab/" alt="Game QR Code" className="w-20 h-20 opacity-80" />
+             </div>
+             <p className="text-xs font-bold"><i className="fa-solid fa-qrcode"></i> 掃描 QR Code 快速加入遊戲</p>
+         </footer>
         </div>
     );
 }
