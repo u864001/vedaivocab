@@ -215,3 +215,6 @@ function Lobby({ onNavigate, settings, setSettings, wordDatabase, groupedUnits, 
         </div>
     );
 }
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+ root.render(<App />);
